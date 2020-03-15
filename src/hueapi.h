@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <QtNetwork/QNetworkAccessManager>
+#include <src/light.h>
 
 class HueApi
 {
@@ -11,34 +12,6 @@ public:
     struct ApiConfig {
         QString username = {};
         QUrl bridge_ip = {};
-    };
-
-    enum LampColorMode {
-        UNKNOWN,
-        XY
-    };
-
-    struct Light {
-        bool on = false;
-        int bri = 0;
-        int hue = 0;
-        int sat = 0;
-        std::pair<double, double> xy = {0,0};
-        int ct = 0;
-        LampColorMode colormode = LampColorMode::UNKNOWN;
-        bool reachable = false;
-        std::string type = "";
-        std::string name = "";
-        std::string uniqueid = "";
-    };
-
-
-    struct Room {
-        QVector<Light> lights = {};
-    };
-
-    struct Rooms {
-        QVector<Room> rooms = {};
     };
 
     /*
@@ -83,7 +56,7 @@ public:
     /*
      *  Get the light objects from the bridge
     */
-    const QVector<Light>& lights() const { return m_lights; }
+    QVector<Light>& lights() { return m_lights; }
 
 private:
 

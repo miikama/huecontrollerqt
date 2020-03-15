@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <src/hueapi.h>
+#include <src/lightwidget.h>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -24,6 +25,15 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << "No previous authentication available";
         m_hue_api->authorize_bridge();
     }
+
+    // load lights
+    if(m_hue_api->bridge_authenticated())
+    {
+        m_hue_api->load_light_info();
+    }
+
+    // add the light widgets
+    draw_lights();
 }
 
 MainWindow::~MainWindow()
@@ -56,7 +66,20 @@ void MainWindow::on_actionAuthenticate_triggered()
     m_hue_api->authorize_bridge();
 }
 
-void MainWindow::on_pushButton_clicked()
+void MainWindow::draw_lights()
+{
+    for( auto& light : m_hue_api->lights())
+    {
+        auto light_widget = new LightWidget(this, &light);
+        m_light_widgets.append(light_widget);
+
+        this->ui->LightWidgetLayout->addWidget(light_widget);
+    }
+
+
+}
+
+void MainWindow::on_testingButton_clicked()
 {
     if(!m_hue_api)
     {
@@ -64,8 +87,7 @@ void MainWindow::on_pushButton_clicked()
         return;
     }
 
-
-    // lets get the lights
-    m_hue_api->load_light_info();
+    qDebug() << "testing";
+    draw_lights();
 
 }

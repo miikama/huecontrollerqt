@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <memory>
+#include <src/lightwidget.h>
 #include <src/hueapi.h>
 
 namespace Ui {
@@ -24,11 +25,16 @@ private slots:
 
     void on_actionAuthenticate_triggered();
 
-    void on_pushButton_clicked();
+    void on_testingButton_clicked();
 
 private:
+
+    void draw_lights();
+
     Ui::MainWindow *ui;    
     std::unique_ptr<HueApi> m_hue_api;
+
+    QVector<LightWidget*> m_light_widgets;
 
 };
 

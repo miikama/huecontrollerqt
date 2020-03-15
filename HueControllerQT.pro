@@ -28,11 +28,13 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         src/hueapi.cpp \
+        src/light.cpp \
         src/lightwidget.cpp
 
 HEADERS += \
         mainwindow.h \
         src/hueapi.h \
+        src/light.h \
         src/lightwidget.h
 
 FORMS += \

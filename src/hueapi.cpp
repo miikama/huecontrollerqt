@@ -1,4 +1,5 @@
 #include "hueapi.h"
+#include <src/light.h>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
@@ -12,6 +13,7 @@
 #include <QFile>
 #include <QDir>
 #include <iostream>
+
 
 #define DEBUG 0
 
@@ -53,7 +55,7 @@ HueApi::HueApi(QWidget* parent)
             this->on_authorized(reply);
     });
 
-    // connect authenticate bridge reply manager
+    // connect bridge light api reply manager
     m_query_lights_manager = new QNetworkAccessManager(m_parent);
     QObject::connect(m_query_lights_manager, &QNetworkAccessManager::finished,
                      [&](QNetworkReply* reply){
@@ -227,36 +229,38 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
             continue;
         }
 
-        Light light = {};
+        Light::LightData light_data = {};
 
         // parse state
         auto state = entry.find("state")->toObject();
-        light.on = state.find("on")->toBool();
-        light.bri = state.find("bri")->toInt();
-        light.hue = state.find("hue")->toInt();
-        light.sat = state.find("sat")->toInt();
+        light_data.on = state.find("on")->toBool();
+        light_data.bri = state.find("bri")->toInt();
+        light_data.hue = state.find("hue")->toInt();
+        light_data.sat = state.find("sat")->toInt();
 
         auto xy = state.find("xy")->toArray();
         if(xy.empty()) {
-            light.xy = {0,0};
+            light_data.xy = {0,0};
         }
         else {
-            light.xy = { xy.first().toDouble(), xy.last().toDouble() };
+            light_data.xy = { xy.first().toDouble(), xy.last().toDouble() };
         }
 
         // Todo: parse more that xy mode
-        light.colormode = state.find("colormode")->toString() == "xy" ? LampColorMode::XY : LampColorMode::UNKNOWN;
-        light.reachable = state.find("reachable")->toBool();
+        light_data.colormode = state.find("colormode")->toString() == "xy" ? Light::LampColorMode::XY : Light::LampColorMode::UNKNOWN;
+        light_data.reachable = state.find("reachable")->toBool();
 
         // parse general information
-        light.type = entry.find("type")->toString().toStdString();
-        light.name = entry.find("name")->toString().toStdString();
-        light.uniqueid = entry.find("uniqueid")->toString().toStdString();
+        light_data.type = entry.find("type")->toString();
+        light_data.name = entry.find("name")->toString();
+        light_data.uniqueid = entry.find("uniqueid")->toString();
+
+        Light light(std::move(light_data), this);
 
         m_lights.append(std::move(light));
     }
 
-    qDebug() << "All lights: " << m_lights.length();
+    qDebug() << "Found total of " << m_lights.length() << " lights.";
 
 }
 
