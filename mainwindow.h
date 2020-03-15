@@ -27,12 +27,19 @@ private slots:
 
     void on_testingButton_clicked();
 
-private:
-
     void draw_lights();
 
+private:
+
+    /*
+     *  Set up responses to the API events.
+    */
+    void setupConnections();
+
+    void clearLightWidgets();
+
     Ui::MainWindow *ui;    
-    std::unique_ptr<HueApi> m_hue_api;
+    HueApi* m_hue_api;
 
     QVector<LightWidget*> m_light_widgets;
 

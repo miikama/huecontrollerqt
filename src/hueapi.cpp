@@ -17,11 +17,9 @@
 
 #define DEBUG 0
 
-HueApi::HueApi(QWidget* parent)
+HueApi::HueApi(QWidget* parent) :
+    QObject(parent)
 {
-
-    m_parent = parent;
-
     // Load bridge config on initialization
     auto success = load_bridge_config();
     if(!success)
@@ -38,7 +36,7 @@ HueApi::HueApi(QWidget* parent)
     };
 
     // connect find_bridge reply manager
-    m_bridge_api_manager = new QNetworkAccessManager(m_parent);
+    m_bridge_api_manager = new QNetworkAccessManager(this);
     QObject::connect(m_bridge_api_manager, &QNetworkAccessManager::finished,
                      [&](QNetworkReply* reply){
 
@@ -47,7 +45,7 @@ HueApi::HueApi(QWidget* parent)
     });
 
     // connect authenticate bridge reply manager
-    m_authenticate_bridge_manager = new QNetworkAccessManager(m_parent);    
+    m_authenticate_bridge_manager = new QNetworkAccessManager(this);
     QObject::connect(m_authenticate_bridge_manager, &QNetworkAccessManager::finished,
                      [&](QNetworkReply* reply){
 
@@ -56,7 +54,7 @@ HueApi::HueApi(QWidget* parent)
     });
 
     // connect bridge light api reply manager
-    m_query_lights_manager = new QNetworkAccessManager(m_parent);
+    m_query_lights_manager = new QNetworkAccessManager(this);
     QObject::connect(m_query_lights_manager, &QNetworkAccessManager::finished,
                      [&](QNetworkReply* reply){
 
@@ -80,28 +78,23 @@ void HueApi::on_bridge_search_complete(QNetworkReply* reply)
     qDebug() << "parsed ip address: " << jsonObject["internalipaddress"].toString();
     auto ip_string = jsonObject["internalipaddress"].toString();
 
-
     QUrl hue_bridge_ip = QUrl(ip_string);
 
+    // TODO: emit a signal from these and move the messageboxes to gui code
     if(hue_bridge_ip.isValid())
     {
-        qDebug() << "Got a valid bridge api: " <<  hue_bridge_ip.isValid();
-        QString found_text = "Found Hue bridge at ip." + hue_bridge_ip.toString();
-        QMessageBox::information(m_parent, m_parent->tr("HueControllerapp"), m_parent->tr(found_text.toUtf8()));
+        qDebug() << "Got a valid bridge api: " <<  hue_bridge_ip.isValid();        
+        emit validBridgeFound(hue_bridge_ip);
     }
     else
     {
-        QMessageBox::warning(m_parent, m_parent->tr("HueControllerapp"), m_parent->tr("No Hue bridge found."));
+        emit noBridgeFound();
         return;
     }
 
     // update bridge ip config
     m_bridge_config.bridge_ip = hue_bridge_ip;
     store_bridge_config();
-
-    authorize_bridge();
-
-
 }
 
 void HueApi::on_authorized(QNetworkReply *reply) {
@@ -137,7 +130,7 @@ void HueApi::on_authorized(QNetworkReply *reply) {
     {
         qDebug() << "got error: " << error_response;
         QString error_message = "Authentication failed: " + error_response.find("description")->toString();
-        QMessageBox::warning(m_parent, m_parent->tr("HueControllerapp"), m_parent->tr(error_message.toUtf8()));
+        emit authenticationFailed(error_message);
         return;
     }
 
@@ -152,9 +145,7 @@ void HueApi::on_authorized(QNetworkReply *reply) {
         qDebug() << "got username: " << username;
         m_bridge_config.username = username;
         store_bridge_config();
-
-        QString success_message = "Succesfully autheticated with username: " + username;
-        QMessageBox::information(m_parent, m_parent->tr("HueControllerapp"), m_parent->tr(success_message.toUtf8()));
+        emit authenticationSucceeded(username);
     }
 
 }
@@ -194,7 +185,7 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
                         "modelid": "LCT007",
                         "manufacturername": "Philips",
                         "productname": "Hue color lamp",
-                        "uniqueid": "00:17:88:01:00:bd:c7:b9-0b",
+                        "uniqueid": "0HueApi0:17:88:01:00:bd:c7:b9-0b",
                         "swversion": "5.105.0.21169"
                     }
             }
@@ -261,6 +252,8 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
     }
 
     qDebug() << "Found total of " << m_lights.length() << " lights.";
+
+    emit lightsLoaded();
 
 }
 

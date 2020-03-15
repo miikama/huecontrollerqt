@@ -4,9 +4,18 @@
 #include <memory>
 #include <QtNetwork/QNetworkAccessManager>
 #include <src/light.h>
+#include <QObject>
 
-class HueApi
+class HueApi : public QObject
 {
+    Q_OBJECT
+
+    Q_PROPERTY(NOTIFY lightsLoaded)
+    Q_PROPERTY(NOTIFY validBridgeFound)
+    Q_PROPERTY(NOTIFY noBridgeFound)
+    Q_PROPERTY(NOTIFY authenticationFailed)
+    Q_PROPERTY(NOTIFY authenticationSucceeded)
+
 public:
 
     struct ApiConfig {
@@ -19,7 +28,7 @@ public:
      *  Otherwise we will be left with null pointers to the NetworkAccessManager
      *  which is linked to the parent QWidget.
      */
-    HueApi(QWidget* parent);
+    explicit HueApi(QWidget* parent = nullptr);
 
     /*
      * Calls api to initiate upnp to find Hue bridge on the local network
@@ -58,6 +67,16 @@ public:
     */
     QVector<Light>& lights() { return m_lights; }
 
+signals:
+
+    void validBridgeFound(QUrl bridge_ip);
+    void noBridgeFound();
+
+    void authenticationFailed(QString error_message);
+    void authenticationSucceeded(QString user_name);
+
+    void lightsLoaded();
+
 private:
 
      void on_bridge_search_complete(QNetworkReply* reply);
@@ -71,8 +90,6 @@ private:
      QUrl api_lights_endpoint() { return "http://" + m_bridge_config.bridge_ip.toString() + "/api/" + m_bridge_config.username + "/lights"; }
 
      ApiConfig m_bridge_config = {};
-
-     QWidget* m_parent;
 
      // Feels stupid keeping own members for each query type, but lets do
      // it like this for now...

@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <src/hueapi.h>
 #include <src/lightwidget.h>
+#include <QMessageBox>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -9,8 +10,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    m_hue_api = std::unique_ptr<HueApi> {new HueApi(this)};
+    m_hue_api = new HueApi(this);
 
+    // Connect all ui events
+    setupConnections();
 
     if(!m_hue_api->bridge_found())
     {
@@ -26,19 +29,50 @@ MainWindow::MainWindow(QWidget *parent) :
         m_hue_api->authorize_bridge();
     }
 
-    // load lights
+    // load light info
     if(m_hue_api->bridge_authenticated())
     {
         m_hue_api->load_light_info();
     }
 
-    // add the light widgets
-    draw_lights();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setupConnections() {
+
+    // add the light widgets
+    connect(m_hue_api, SIGNAL(lightsLoaded()) , this, SLOT(draw_lights()));
+
+    connect(m_hue_api, &HueApi::validBridgeFound, [this](QUrl bridge_ip){
+        QString found_text = "Found Hue bridge at ip." + bridge_ip.toString();
+        QMessageBox::information(this, tr("HueControllerapp"), tr(found_text.toUtf8()));
+    } );
+
+    connect(m_hue_api, &HueApi::noBridgeFound, [this](){
+        QMessageBox::warning(this, tr("HueControllerapp"), tr("No Hue bridge found."));
+    } );
+
+    connect(m_hue_api, &HueApi::authenticationFailed, [this](QString error_message){
+        QMessageBox::warning(this, tr("HueControllerapp"), tr(error_message.toUtf8()));
+    } );
+
+    connect(m_hue_api, &HueApi::authenticationSucceeded, [this](QString username){
+        QString success_message = "Succesfully autheticated with username: " + username;
+        QMessageBox::information(this, tr("HueControllerapp"), tr(success_message.toUtf8()));
+    } );
+}
+
+void MainWindow::clearLightWidgets()
+{
+    for(auto& light : m_light_widgets)
+    {
+        delete light;
+    }
+    m_light_widgets.clear();
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -68,6 +102,12 @@ void MainWindow::on_actionAuthenticate_triggered()
 
 void MainWindow::draw_lights()
 {
+    qDebug() << "draw lights triggered";
+
+    // start by clearing out lights
+    clearLightWidgets();
+
+    // and the initialize new light objects
     for( auto& light : m_hue_api->lights())
     {
         auto light_widget = new LightWidget(this, &light);
@@ -75,9 +115,9 @@ void MainWindow::draw_lights()
 
         this->ui->LightWidgetLayout->addWidget(light_widget);
     }
-
-
 }
+
+
 
 void MainWindow::on_testingButton_clicked()
 {
@@ -89,5 +129,7 @@ void MainWindow::on_testingButton_clicked()
 
     qDebug() << "testing";
     draw_lights();
-
 }
+
+
+
