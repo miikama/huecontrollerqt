@@ -15,13 +15,6 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
-     <widget class="QPushButton" name="testingButton">
-      <property name="text">
-       <string>PushButton</string>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="0">
      <layout class="QVBoxLayout" name="LightWidgetLayout"/>
     </item>
@@ -44,6 +37,7 @@
     <addaction name="separator"/>
     <addaction name="actionFind_Hue_bridge"/>
     <addaction name="actionAuthenticate"/>
+    <addaction name="actionRefresh"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuConnect"/>
@@ -62,6 +56,11 @@
   <action name="actionAuthenticate">
    <property name="text">
     <string>Authenticate</string>
+   </property>
+  </action>
+  <action name="actionRefresh">
+   <property name="text">
+    <string>Refresh</string>
    </property>
   </action>
  </widget>

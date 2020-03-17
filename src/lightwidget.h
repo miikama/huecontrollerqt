@@ -20,6 +20,8 @@ signals:
 
 public slots:
 
+    void onOnOffToggleChange(bool checked);
+    void onSliderMoved();
 
 private:
 

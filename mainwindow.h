@@ -25,9 +25,9 @@ private slots:
 
     void on_actionAuthenticate_triggered();
 
-    void on_testingButton_clicked();
-
     void draw_lights();
+
+    void on_actionRefresh_triggered();
 
 private:
 

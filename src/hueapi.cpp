@@ -62,6 +62,15 @@ HueApi::HueApi(QWidget* parent) :
             this->on_light_query_response(reply);
     });
 
+    // connect post light updates manager
+    m_update_lights_manager = new QNetworkAccessManager(this);
+    QObject::connect(m_update_lights_manager, &QNetworkAccessManager::finished,
+                     [&](QNetworkReply* reply){
+
+        if(confirm_reply(reply))
+            this->on_update_lights_query_response(reply);
+    });
+
 
 }
 
@@ -120,8 +129,12 @@ void HueApi::on_authorized(QNetworkReply *reply) {
     */
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(response_data.toUtf8());
-    QJsonObject rootObj = jsonDoc.object();
     auto response = jsonDoc.array().first().toObject();
+
+    if(response.empty())
+    {
+        emit authenticationFailed("Got an unexpected response: '" + response_data + "'");
+    }
 
     // First check for error responses
     QJsonObject error_response = response.find("error")->toObject();
@@ -207,7 +220,7 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
     m_lights = {};
 
     auto keys = rootObj.keys();
-    qDebug() << "Got me keys: " << keys;
+    qDebug() << "Received lights with ids: " << keys;
 
     for(auto key : keys)
     {
@@ -221,6 +234,9 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
         }
 
         Light::LightData light_data = {};
+        // The key is used by the bridge as the main entrypoint
+        // id for lights, not uniqueid
+        light_data.bridge_id = key;
 
         // parse state
         auto state = entry.find("state")->toObject();
@@ -253,7 +269,73 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
 
     qDebug() << "Found total of " << m_lights.length() << " lights.";
 
-    emit lightsLoaded();
+    emit lightsUpdated();
+
+}
+
+void HueApi::on_update_lights_query_response(QNetworkReply *reply)
+{
+    /*
+     *  A response to PUT request to the api_set_light_state_endpoint()
+     *
+     * results in either an error message:
+     *
+     * [
+     *   {"error":
+     *      {
+     *          "type":3,
+     *          "address":"/lights/00:17:88:01:04:56:3b:bd-0b/state",
+     *          "description":"resource, /lights/00:17:88:01:04:56:3b:bd-0b/state, not available"
+     *      }
+     *   }
+     * ]
+     *
+     * of a successfull response
+     *
+     * [
+     *   {"success":
+     *      {
+     *          "/lights/1/name":"Bedroom Light"
+     *      }
+     *   }
+     * ]
+     *
+     *
+    */
+    QString response_data = reply->readAll();
+    qDebug() << "Got reply on update_lights_query: " << response_data;
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(response_data.toUtf8());
+
+#if DEBUG
+    qDebug() << "doc is array: " << jsonDoc.isArray() << ", doc is object: " << jsonDoc.isObject() << ", doc is empty: " << jsonDoc.isEmpty();
+#endif
+
+    auto response = jsonDoc.array().first().toObject();
+
+    // the reponse wasn't what we excpected
+    if(response.empty())
+    {
+        emit lightUpdateFailed("Got an unexpected response: '" + response_data + "'");
+    }
+
+    // First check for error responses
+    QJsonObject error_response = response.find("error")->toObject();
+
+    if(!error_response.empty())
+    {
+        qDebug() << "got error: " << error_response;
+        QString error_message = "Setting light state failed: " + error_response.find("description")->toString();
+        emit lightUpdateFailed(error_message);
+        return;
+    }
+
+
+    // get the username from the response
+    auto success_response = response.find("success")->toObject();
+    qDebug() << "got success: " << success_response;
+
+    emit lightsUpdated();
 
 }
 
@@ -303,10 +385,64 @@ void HueApi::load_light_info() {
     if(!bridge_found() || !bridge_authenticated())
         return;
 
-    qDebug() << "at load light ind";
     auto request = QNetworkRequest(api_lights_endpoint());
     m_query_lights_manager->get(request);
 }
+
+void HueApi::setLightOn(const Light& light, bool new_status)
+{
+    auto light_id = light.getBridgeID();
+    qDebug() << "Updating light on/off for light with ID: " << light_id;
+
+    if(!bridge_found() || !bridge_authenticated())
+        return;
+
+    if(!validLightID(light_id))
+        return;
+
+    qDebug() << "LightID was valid.";
+
+    // set the query data
+    QJsonObject new_state_data;
+    new_state_data.insert("on", new_status);
+
+    // build the query
+    QUrl endpoint =  api_set_light_state_endpoint(light_id);
+    QNetworkRequest auth_request(endpoint);
+    auth_request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    // send it
+    qDebug() << "sending query to endpoint: " << auth_request.url() << "json data: " << new_state_data;
+    m_update_lights_manager->put(auth_request, QJsonDocument(new_state_data).toJson());
+}
+
+void HueApi::setLightBrightness(const Light& light, int brigthness)
+{
+    auto light_id = light.getBridgeID();
+    if(!bridge_found() || !bridge_authenticated())
+        return;
+
+    if(!validLightID(light_id))
+        return;
+
+    auto clipped_brightness = std::max(brigthness, 0);
+    clipped_brightness = std::min(clipped_brightness, light.maxBrightness());
+
+    // set the query data
+    QJsonObject new_state_data;
+    new_state_data.insert("bri", clipped_brightness);
+
+    // build the query
+    QUrl endpoint =  api_set_light_state_endpoint(light_id);
+    QNetworkRequest auth_request(endpoint);
+    auth_request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    // send it
+    qDebug() << "sending query to endpoint: " << auth_request.url() << "json data: " << new_state_data;
+    m_update_lights_manager->put(auth_request, QJsonDocument(new_state_data).toJson());
+
+}
+
 
 bool HueApi::load_bridge_config() {
 
@@ -347,8 +483,6 @@ bool HueApi::load_bridge_config() {
     m_bridge_config.username = username;
     return true;
 
-
-
 }
 
 void HueApi::store_bridge_config() {
@@ -378,6 +512,28 @@ void HueApi::store_bridge_config() {
 
 
     qDebug() << "writable config locations: " << QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+}
+
+bool HueApi::validLightID(const QString &light_id) const
+{
+    for(auto& light : m_lights)
+    {
+        if(light.getBridgeID() == light_id)
+            return true;
+    }
+    return false;
+}
+
+QUrl HueApi::api_endpoint() {
+    return "http://" + m_bridge_config.bridge_ip.toString() + "/api";
+}
+
+QUrl HueApi::api_lights_endpoint() {
+    return "http://" + m_bridge_config.bridge_ip.toString() + "/api/" + m_bridge_config.username + "/lights";
+}
+
+QUrl HueApi::api_set_light_state_endpoint(QString light_id) {
+    return "http://" + m_bridge_config.bridge_ip.toString() + "/api/" + m_bridge_config.username + "/lights/" + light_id + "/state";
 }
 
 

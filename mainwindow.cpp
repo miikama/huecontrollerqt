@@ -45,7 +45,7 @@ MainWindow::~MainWindow()
 void MainWindow::setupConnections() {
 
     // add the light widgets
-    connect(m_hue_api, SIGNAL(lightsLoaded()) , this, SLOT(draw_lights()));
+    connect(m_hue_api, SIGNAL(lightsUpdated()) , this, SLOT(draw_lights()));
 
     connect(m_hue_api, &HueApi::validBridgeFound, [this](QUrl bridge_ip){
         QString found_text = "Found Hue bridge at ip." + bridge_ip.toString();
@@ -64,6 +64,13 @@ void MainWindow::setupConnections() {
         QString success_message = "Succesfully autheticated with username: " + username;
         QMessageBox::information(this, tr("HueControllerapp"), tr(success_message.toUtf8()));
     } );
+
+    connect(m_hue_api, &HueApi::lightUpdateFailed, [this](QString error_message){
+        QMessageBox::warning(this, tr("HueControllerapp"), tr(error_message.toUtf8()));
+    } );
+
+
+
 }
 
 void MainWindow::clearLightWidgets()
@@ -79,6 +86,14 @@ void MainWindow::on_actionExit_triggered()
 {
     QApplication::quit();
 }
+
+void MainWindow::on_actionRefresh_triggered()
+{
+    if(!m_hue_api)
+        return;
+    m_hue_api->load_light_info();
+}
+
 
 void MainWindow::on_actionFind_Hue_bridge_triggered()
 {
@@ -116,20 +131,4 @@ void MainWindow::draw_lights()
         this->ui->LightWidgetLayout->addWidget(light_widget);
     }
 }
-
-
-
-void MainWindow::on_testingButton_clicked()
-{
-    if(!m_hue_api)
-    {
-        qDebug() << "No hue api available";
-        return;
-    }
-
-    qDebug() << "testing";
-    draw_lights();
-}
-
-
 

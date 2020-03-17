@@ -10,11 +10,12 @@ class HueApi : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(NOTIFY lightsLoaded)
+    Q_PROPERTY(NOTIFY lightsUpdated)
     Q_PROPERTY(NOTIFY validBridgeFound)
     Q_PROPERTY(NOTIFY noBridgeFound)
     Q_PROPERTY(NOTIFY authenticationFailed)
     Q_PROPERTY(NOTIFY authenticationSucceeded)
+    Q_PROPERTY(NOTIFY lightUpdateFailed)
 
 public:
 
@@ -63,6 +64,16 @@ public:
     void load_light_info();
 
     /*
+     * Update Light on/off
+     */
+    void setLightOn(const Light&, bool new_status);
+
+    /*
+     * Update Light brighness
+     */
+    void setLightBrightness(const Light& light, int brigthness);
+
+    /*
      *  Get the light objects from the bridge
     */
     QVector<Light>& lights() { return m_lights; }
@@ -75,19 +86,29 @@ signals:
     void authenticationFailed(QString error_message);
     void authenticationSucceeded(QString user_name);
 
-    void lightsLoaded();
+    void lightUpdateFailed(QString error_message);
+
+    void lightsUpdated();
 
 private:
 
      void on_bridge_search_complete(QNetworkReply* reply);
      void on_authorized(QNetworkReply* reply);
      void on_light_query_response(QNetworkReply* reply);
+     void on_update_lights_query_response(QNetworkReply* reply);
 
      bool load_bridge_config();
      void store_bridge_config();
 
-     QUrl api_endpoint() { return "http://" + m_bridge_config.bridge_ip.toString() + "/api"; }
-     QUrl api_lights_endpoint() { return "http://" + m_bridge_config.bridge_ip.toString() + "/api/" + m_bridge_config.username + "/lights"; }
+     // whether the argument light id is in the lights owned by this bridge
+    bool validLightID(const QString& light_id ) const;
+
+     // /api
+     QUrl api_endpoint();
+     // /api/<username>/lights
+     QUrl api_lights_endpoint();
+     // /api/<username>/lights/<id>/state
+     QUrl api_set_light_state_endpoint(QString light_id);
 
      ApiConfig m_bridge_config = {};
 
@@ -96,6 +117,7 @@ private:
      QNetworkAccessManager* m_bridge_api_manager;
      QNetworkAccessManager* m_authenticate_bridge_manager;
      QNetworkAccessManager* m_query_lights_manager;
+     QNetworkAccessManager* m_update_lights_manager;
 
 
      // Configuration file will be loaded from system StandardLocation
