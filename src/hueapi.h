@@ -78,6 +78,11 @@ public:
     */
     QVector<Light>& lights() { return m_lights; }
 
+    /**
+      * Get a light object by its bridge id
+      */
+    Light* light_from_id(QString light_id);
+
 signals:
 
     void validBridgeFound(QUrl bridge_ip);

@@ -1,5 +1,6 @@
 #include "hueapi.h"
 #include <src/light.h>
+#include <src/huebridgeresponse.h>
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkReply>
@@ -295,7 +296,9 @@ void HueApi::on_update_lights_query_response(QNetworkReply *reply)
      * [
      *   {"success":
      *      {
-     *          "/lights/1/name":"Bedroom Light"
+     *          "/lights/1/name":"Bedroom Light",
+     *          "/lights/1/state/bri":214},
+     *          ...
      *      }
      *   }
      * ]
@@ -305,35 +308,30 @@ void HueApi::on_update_lights_query_response(QNetworkReply *reply)
     QString response_data = reply->readAll();
     qDebug() << "Got reply on update_lights_query: " << response_data;
 
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(response_data.toUtf8());
-
-#if DEBUG
-    qDebug() << "doc is array: " << jsonDoc.isArray() << ", doc is object: " << jsonDoc.isObject() << ", doc is empty: " << jsonDoc.isEmpty();
-#endif
-
-    auto response = jsonDoc.array().first().toObject();
-
-    // the reponse wasn't what we excpected
-    if(response.empty())
+    auto possible_bridge_response = HueBridgeResponse::from_json(response_data);
+    if(!possible_bridge_response.has_value())
     {
-        emit lightUpdateFailed("Got an unexpected response: '" + response_data + "'");
-    }
-
-    // First check for error responses
-    QJsonObject error_response = response.find("error")->toObject();
-
-    if(!error_response.empty())
-    {
-        qDebug() << "got error: " << error_response;
-        QString error_message = "Setting light state failed: " + error_response.find("description")->toString();
-        emit lightUpdateFailed(error_message);
+        qDebug() << "Got invalid response: " << possible_bridge_response->errorMessage();
+        emit lightUpdateFailed("Got invalid response: " + possible_bridge_response->errorMessage());
         return;
     }
 
+    auto bridge_response = possible_bridge_response.value();
 
-    // get the username from the response
-    auto success_response = response.find("success")->toObject();
-    qDebug() << "got success: " << success_response;
+    if(!bridge_response.success())
+        emit lightUpdateFailed("Query failed: " + bridge_response.errorMessage());
+
+    auto light = light_from_id(bridge_response.light_id());
+    if(!light) {
+        qDebug() << "No light found for the light id in the bridge response: " << bridge_response.light_id();
+        return;
+    }
+
+    if(bridge_response.isOnResponse())
+        light->setOn(bridge_response.on());
+
+    if(bridge_response.isBrightnessResponse())
+        light->setBrightness(bridge_response.brigthness());
 
     emit lightsUpdated();
 
@@ -441,6 +439,16 @@ void HueApi::setLightBrightness(const Light& light, int brigthness)
     qDebug() << "sending query to endpoint: " << auth_request.url() << "json data: " << new_state_data;
     m_update_lights_manager->put(auth_request, QJsonDocument(new_state_data).toJson());
 
+}
+
+Light* HueApi::light_from_id(QString light_id)
+{
+    for( auto& light : m_lights)
+    {
+        if(light.getBridgeID() == light_id)
+            return &light;
+    }
+    return nullptr;
 }
 
 

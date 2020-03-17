@@ -28,12 +28,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
         src/hueapi.cpp \
+        src/huebridgeresponse.cpp \
         src/light.cpp \
         src/lightwidget.cpp
 
 HEADERS += \
         mainwindow.h \
         src/hueapi.h \
+        src/huebridgeresponse.h \
         src/light.h \
         src/lightwidget.h
 

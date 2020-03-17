@@ -17,6 +17,11 @@ void Light::toggle()
     m_hue_api->setLightOn(*this, m_data.on);
 }
 
+void Light::setOn(bool state)
+{
+    m_data.on = state;
+}
+
 void Light::setBrightness(int brightness)
 {
     if(!m_hue_api)
