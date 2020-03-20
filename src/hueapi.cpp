@@ -308,22 +308,19 @@ void HueApi::on_update_lights_query_response(QNetworkReply *reply)
     QString response_data = reply->readAll();
     qDebug() << "Got reply on update_lights_query: " << response_data;
 
-    auto possible_bridge_response = HueBridgeResponse::from_json(response_data);
-    if(!possible_bridge_response.has_value())
+    auto bridge_response = HueBridgeResponse::from_json(response_data);
+
+    if(!bridge_response.success())
     {
-        qDebug() << "Got invalid response: " << possible_bridge_response->errorMessage();
-        emit lightUpdateFailed("Got invalid response: " + possible_bridge_response->errorMessage());
+        emit lightUpdateFailed("Query failed: " + bridge_response.errorMessage());
         return;
     }
 
-    auto bridge_response = possible_bridge_response.value();
-
-    if(!bridge_response.success())
-        emit lightUpdateFailed("Query failed: " + bridge_response.errorMessage());
 
     auto light = light_from_id(bridge_response.light_id());
     if(!light) {
         qDebug() << "No light found for the light id in the bridge response: " << bridge_response.light_id();
+        emit lightUpdateFailed("No light object found for light id '" + bridge_response.light_id() + "' in bridge response.");
         return;
     }
 

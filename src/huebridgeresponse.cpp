@@ -10,6 +10,14 @@
 
 HueBridgeResponse::HueBridgeResponse(const QJsonObject& response)
 {
+    // the reponse wasn't what we excpected
+    if(response.empty())
+    {
+        m_success = false;
+        m_error_message = "Got invalid response.";
+        return;
+    }
+
     // First check for error responses
     QJsonObject error_response = response.find("error")->toObject();
 
@@ -46,19 +54,13 @@ HueBridgeResponse::HueBridgeResponse(const QJsonObject& response)
 
 }
 
-std::optional<HueBridgeResponse> HueBridgeResponse::from_json(const QString response_string) {
+HueBridgeResponse HueBridgeResponse::from_json(const QString response_string) {
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(response_string.toUtf8());
 
-    auto response = jsonDoc.array().first().toObject();
+    auto response = jsonDoc.array().first().toObject();    
 
-    // the reponse wasn't what we excpected
-    if(response.empty())
-    {
-        return {};
-    }
-
-    return std::optional<HueBridgeResponse> { HueBridgeResponse(response) };
+    return HueBridgeResponse(response);
 }
 
 QString HueBridgeResponse::id_from_key(QString key)

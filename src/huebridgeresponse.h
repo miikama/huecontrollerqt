@@ -46,19 +46,28 @@ public:
     /**
      *   A bridge object or none if response could not be parsed.
      */
-    static std::optional<HueBridgeResponse> from_json(const QString response);
+    static HueBridgeResponse from_json(const QString response);
 
     /**
      * whether the operation this response was sent for was successfull
      */
     bool success() const { return m_success; }
 
+    /**
+     *  If the response fails, you can get the error message from here.
+     */
     QString errorMessage() const { return  m_error_message; }
+
+    /**
+     *  The light id in the response from the bridge if there was one in the response.
+     */
     QString light_id() const { return m_light_id; }
 
+    /**
+     *  Different fiels that might be present in the response
+     */
     bool isOnResponse() const { return m_is_on.has_value(); }
     int on() const { return m_is_on.value_or(false); }
-
     bool isBrightnessResponse() const { return m_new_brighness.has_value(); }
     int brigthness() const { return m_new_brighness.value_or(-1); }
 
