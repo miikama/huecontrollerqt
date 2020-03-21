@@ -50,7 +50,7 @@ void LightWidget::build_widget()
     {
         m_slider = new QSlider(this);
         m_slider->setOrientation(Qt::Orientation::Horizontal);
-        m_slider->setMaximum(m_light->maxBrightness());
+        m_slider->setMaximum(Light::maxBrightness());
         m_slider->setValue(m_light->getBrightness());        
         m_slider->setTickInterval(1);
         // do not emit events during drag

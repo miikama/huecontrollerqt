@@ -29,10 +29,10 @@ private:
 
     Light* m_light;
 
-    QGridLayout* m_inner_layout;
-    QSlider* m_slider;
-    QLabel* m_label;
-    QPushButton* m_on_toggle_button;
+    QGridLayout* m_inner_layout = nullptr;
+    QSlider* m_slider = nullptr;
+    QLabel* m_label = nullptr;
+    QPushButton* m_on_toggle_button = nullptr;
 };
 
 #endif // LIGHTWIDGET_H

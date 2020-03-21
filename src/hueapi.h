@@ -81,7 +81,7 @@ public:
     /**
       * Get a light object by its bridge id
       */
-    Light* light_from_id(QString light_id);
+    Light* light_from_id(const QString& light_id);
 
 signals:
 
@@ -113,7 +113,7 @@ private:
      // /api/<username>/lights
      QUrl api_lights_endpoint();
      // /api/<username>/lights/<id>/state
-     QUrl api_set_light_state_endpoint(QString light_id);
+     QUrl api_set_light_state_endpoint(const QString& light_id);
 
      ApiConfig m_bridge_config = {};
 

@@ -10,6 +10,9 @@
 
 HueBridgeResponse::HueBridgeResponse(const QJsonObject& response)
 {
+    // assume we got this
+    m_success = true;
+
     // the reponse wasn't what we excpected
     if(response.empty())
     {
@@ -34,10 +37,7 @@ HueBridgeResponse::HueBridgeResponse(const QJsonObject& response)
         m_success = false;
         m_error_message = "No 'success' field in the response";
         return;
-    }
-    else {
-        m_success = true;
-    }
+    }    
 
     auto light_keys = success_response.keys();
 
@@ -54,7 +54,7 @@ HueBridgeResponse::HueBridgeResponse(const QJsonObject& response)
 
 }
 
-HueBridgeResponse HueBridgeResponse::from_json(const QString response_string) {
+HueBridgeResponse HueBridgeResponse::from_json(const QString& response_string) {
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(response_string.toUtf8());
 
@@ -63,7 +63,7 @@ HueBridgeResponse HueBridgeResponse::from_json(const QString response_string) {
     return HueBridgeResponse(response);
 }
 
-QString HueBridgeResponse::id_from_key(QString key)
+QString HueBridgeResponse::id_from_key(const QString& key)
 {
     auto paths = key.split('/');
 
@@ -73,7 +73,7 @@ QString HueBridgeResponse::id_from_key(QString key)
     return paths[1];
 }
 
-bool HueBridgeResponse::parse_light_id(QString light_key)
+bool HueBridgeResponse::parse_light_id(const QString& light_key)
 {
     auto light_id = id_from_key(light_key);
     if(light_id.length() == 0)

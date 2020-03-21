@@ -46,7 +46,7 @@ public:
     /**
      *   A bridge object or none if response could not be parsed.
      */
-    static HueBridgeResponse from_json(const QString response);
+    static HueBridgeResponse from_json(const QString& response);
 
     /**
      * whether the operation this response was sent for was successfull
@@ -77,14 +77,14 @@ private:
     /**
      * parse the bridge response key from 'lights/1/state/bri' -> '1'
      */
-    QString id_from_key(QString key);
-    bool parse_light_id(QString light_key);
+    QString id_from_key(const QString& key);
+    bool parse_light_id(const QString& light_key);
 
     /**
      * parse possible states in the response
      */
-    void parse_on_state(QJsonObject response);
-    void parse_brightness(QJsonObject response);
+    void parse_on_state(QJsonObject state);
+    void parse_brightness(QJsonObject state);
 
     bool m_success = false;
     QString m_error_message = "";

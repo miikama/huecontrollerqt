@@ -223,7 +223,7 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
     auto keys = rootObj.keys();
     qDebug() << "Received lights with ids: " << keys;
 
-    for(auto key : keys)
+    for(auto& key : keys)
     {
         QJsonObject entry = rootObj.find(key)->toObject();
         // lets say that each valid light object requires a state
@@ -421,7 +421,7 @@ void HueApi::setLightBrightness(const Light& light, int brigthness)
         return;
 
     auto clipped_brightness = std::max(brigthness, 0);
-    clipped_brightness = std::min(clipped_brightness, light.maxBrightness());
+    clipped_brightness = std::min(clipped_brightness, Light::maxBrightness());
 
     // set the query data
     QJsonObject new_state_data;
@@ -438,7 +438,7 @@ void HueApi::setLightBrightness(const Light& light, int brigthness)
 
 }
 
-Light* HueApi::light_from_id(QString light_id)
+Light* HueApi::light_from_id(const QString& light_id)
 {
     for( auto& light : m_lights)
     {
@@ -466,7 +466,7 @@ bool HueApi::load_bridge_config() {
 
     // load it
     config_file.open(QIODevice::ReadOnly | QIODevice::Text);
-    QJsonParseError jsonError;
+    QJsonParseError jsonError {};
     QJsonDocument jsonDoc = QJsonDocument::fromJson(config_file.readAll(), &jsonError);
     config_file.close();
 
@@ -537,7 +537,7 @@ QUrl HueApi::api_lights_endpoint() {
     return "http://" + m_bridge_config.bridge_ip.toString() + "/api/" + m_bridge_config.username + "/lights";
 }
 
-QUrl HueApi::api_set_light_state_endpoint(QString light_id) {
+QUrl HueApi::api_set_light_state_endpoint(const QString& light_id) {
     return "http://" + m_bridge_config.bridge_ip.toString() + "/api/" + m_bridge_config.username + "/lights/" + light_id + "/state";
 }
 
