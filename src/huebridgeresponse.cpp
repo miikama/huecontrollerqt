@@ -67,10 +67,15 @@ QString HueBridgeResponse::id_from_key(const QString& key)
 {
     auto paths = key.split('/');
 
-    if(paths.length() < 2)
+    if(paths.length() < 3)
         return "";
 
-    return paths[1];
+    // Sometimes the response contains starting slash, sometimes not.
+    if( key[0] == '/' )
+        return paths[2];
+    else
+        return paths[1];
+
 }
 
 bool HueBridgeResponse::parse_light_id(const QString& light_key)
