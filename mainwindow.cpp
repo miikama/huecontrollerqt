@@ -2,7 +2,9 @@
 #include "ui_mainwindow.h"
 #include <src/hueapi.h>
 #include <src/lightwidget.h>
+#include <src/light.h>
 #include <QMessageBox>
+#include <QDebug>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -99,7 +101,6 @@ void MainWindow::on_actionFind_Hue_bridge_triggered()
 {
     if(!m_hue_api)
     {
-        qDebug() << "No hue api available";
         return;
     }
     m_hue_api->find_bridge();
@@ -109,7 +110,6 @@ void MainWindow::on_actionAuthenticate_triggered()
 {
     if(!m_hue_api)
     {
-        qDebug() << "No hue api available";
         return;
     }
     m_hue_api->authorize_bridge();
@@ -117,12 +117,11 @@ void MainWindow::on_actionAuthenticate_triggered()
 
 void MainWindow::draw_lights()
 {
-    qDebug() << "draw lights triggered";
-
     // start by clearing out lights
     clearLightWidgets();
 
     // and the initialize new light objects
+
     for( auto& light : m_hue_api->lights())
     {
         auto light_widget = new LightWidget(this, &light);

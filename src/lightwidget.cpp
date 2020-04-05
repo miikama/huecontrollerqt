@@ -5,6 +5,7 @@
 #include <QSizePolicy>
 #include <QPushButton>
 #include <QGridLayout>
+#include <QDebug>
 
 LightWidget::LightWidget(QWidget *parent, Light* light)
     : QWidget (parent)

@@ -48,4 +48,10 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 DISTFILES += \
-    README.md
+    LICENSE \
+    README.md \
+    install/HueControllerQT.desktop.template \
+    package.sh \
+    install/install.sh
+    install/supervisor.conf.template
+

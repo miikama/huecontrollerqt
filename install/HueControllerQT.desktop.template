@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Exec=/path/to/bin/my-app-name
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Name[en_US]=my-app-name
+Name=my-app-name
+Comment[en_US]="A small applet to control Hue lights"
+Comment="A small applet to control Hue lights"

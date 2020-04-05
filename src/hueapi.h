@@ -76,7 +76,7 @@ public:
     /*
      *  Get the light objects from the bridge
     */
-    QVector<Light>& lights() { return m_lights; }
+    std::vector<Light>& lights() { return m_lights; }
 
     /**
       * Get a light object by its bridge id
@@ -131,7 +131,7 @@ private:
      QString m_config_dir = "HueControllerQT";
      QString m_config_file_name = "hue_app_config.json";
 
-    QVector<Light> m_lights;
+    std::vector<Light> m_lights;
 
 };
 

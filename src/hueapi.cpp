@@ -11,6 +11,7 @@
 #include <QJsonValue>
 #include <QMessageBox>
 #include <QStandardPaths>
+#include <QDebug>
 #include <QFile>
 #include <QDir>
 #include <iostream>
@@ -265,10 +266,10 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
 
         Light light(std::move(light_data), this);
 
-        m_lights.append(std::move(light));
+        m_lights.push_back(std::move(light));
     }
 
-    qDebug() << "Found total of " << m_lights.length() << " lights.";
+    qDebug() << "Found total of " << m_lights.size() << " lights.";
 
     emit lightsUpdated();
 
@@ -451,8 +452,11 @@ Light* HueApi::light_from_id(const QString& light_id)
 
 bool HueApi::load_bridge_config() {
 
+    qDebug() << "System standard paths: " << QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
+
     // get the save location
     auto system_config_directory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    qDebug() << "Found writable path: " << system_config_directory;
     auto config_directory = QDir::cleanPath(system_config_directory + QDir::separator() + m_config_dir);
     auto config_full_path = QDir::cleanPath(config_directory +  QDir::separator() + m_config_file_name);
 

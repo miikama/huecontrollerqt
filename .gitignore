@@ -1,1 +1,10 @@
 *.pro.user
+*.tar
+
+# packaging
+build
+
+# installation 
+install/supervisor.conf
+install/HueControllerQT
+install/HueControllerQT.desktop

@@ -1,0 +1,11 @@
+[program:HueControllerQT]
+command=/path/to/bin/my-app-name
+directory=/my/home/dir
+user=/my/user
+autostart=true
+autorestart=false
+stopasgroup=true
+killasgroup=true
+stderr_logfile=/var/log/my-app-name/error.log
+stdout_logfile=/var/log/my-app-name/server.log
+environment=DISPLAY=":0",XDG_RUNTIME_DIR="/my/home/dir"
