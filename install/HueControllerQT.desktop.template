@@ -4,6 +4,7 @@ Exec=/path/to/bin/my-app-name
 Hidden=false
 NoDisplay=false
 X-GNOME-Autostart-enabled=true
+X-GNOME-Autostart-Delay=4
 Name[en_US]=my-app-name
 Name=my-app-name
 Comment[en_US]="A small applet to control Hue lights"

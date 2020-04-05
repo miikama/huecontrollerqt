@@ -4,7 +4,9 @@
 ```HueControllerQT``` is a minimalist implementation of a desktop application written in ```C++``` and ```QT``` that you can use to control you Philips Hue smart lights through the Hue bridge. 
 
 
-<img style="max-width: 350px" src="media/EntryScreen.png">
+<div style="display: flex; flex-direction: row; justify-content: center;">
+    <img style="max-width: 350px" src="media/EntryScreen.png">
+</div>
 
 ## Packaging
 
