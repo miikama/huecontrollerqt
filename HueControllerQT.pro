@@ -26,14 +26,14 @@ CONFIG += c++17
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp \
+        src/mainwindow.cpp \
         src/hueapi.cpp \
         src/huebridgeresponse.cpp \
         src/light.cpp \
         src/lightwidget.cpp
 
 HEADERS += \
-        mainwindow.h \
+        src/mainwindow.h \
         src/hueapi.h \
         src/huebridgeresponse.h \
         src/light.h \
@@ -54,4 +54,7 @@ DISTFILES += \
     package.sh \
     install/install.sh
     install/supervisor.conf.template
+
+# app icon
+RC_ICONS = src/graphics/logo.ico
 

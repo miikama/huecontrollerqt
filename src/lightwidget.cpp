@@ -7,25 +7,26 @@
 #include <QGridLayout>
 #include <QDebug>
 
-LightWidget::LightWidget(QWidget *parent, Light* light)
+LightWidget::LightWidget(QWidget *parent, Light& light, HueApi& api)
     : QWidget (parent)
 {
-    m_light = light;
+    m_light = &light;
+    m_hue_api = &api;
     this->build_widget();
 }
 
 void LightWidget::onOnOffToggleChange(bool checked)
 {
     qDebug() << "onOnOffToggleChange, checked: " << checked;
-    if(m_light)
-        m_light->toggle();
+    if(m_light && m_hue_api)
+        m_hue_api->setLightOn(*m_light, !m_light->getOn());
 }
 
 void LightWidget::onSliderMoved()
 {
     qDebug() << "onSliderMoved";
-    if(m_light)
-        m_light->setBrightness(m_slider->value());
+    if(m_light && m_hue_api)
+        m_hue_api->setLightBrightness(*m_light, m_slider->value());
 }
 
 void LightWidget::build_widget()

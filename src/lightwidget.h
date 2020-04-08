@@ -14,7 +14,7 @@ class LightWidget : public QWidget
 {
     Q_OBJECT
 public:
-    explicit LightWidget(QWidget *parent, Light* light);
+    explicit LightWidget(QWidget *parent, Light& light, HueApi& api);
 
 signals:
 
@@ -28,6 +28,7 @@ private:
     void build_widget();
 
     Light* m_light;
+    HueApi* m_hue_api;
 
     QGridLayout* m_inner_layout = nullptr;
     QSlider* m_slider = nullptr;

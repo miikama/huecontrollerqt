@@ -55,12 +55,12 @@ public:
       */
     void toggle();
 
-    /*
+    /**
      * set light on/off
      */
     void setOn(bool state);
 
-    /*
+    /**
      * set light brightness
      */
     void setBrightness(int brightness);
