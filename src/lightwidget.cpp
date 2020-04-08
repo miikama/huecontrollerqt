@@ -44,10 +44,14 @@ void LightWidget::build_widget()
     // switch to toggle light on/off
     m_on_toggle_button = new QPushButton(this);
     m_on_toggle_button->setText("On/Off");
-    m_inner_layout->addWidget(m_on_toggle_button, 0, 4, 1, 1);
-    QObject::connect(m_on_toggle_button, &QPushButton::clicked, [this](bool toggled){ this->onOnOffToggleChange(toggled); });
+    m_on_toggle_button->setCheckable(true);
+    m_on_toggle_button->setChecked(m_light->getOn());
+    m_on_toggle_button->setStyleSheet("QPushButton{background-color: red;} QPushButton:checked{background-color:green;}");
 
-    // lamp has kwown brightness
+    m_inner_layout->addWidget(m_on_toggle_button, 0, 4, 1, 1);    
+    QObject::connect(m_on_toggle_button, &QPushButton::clicked, [this](bool toggled){ this->onOnOffToggleChange(toggled); });    
+
+    // lamp has known brightness
     if( m_light->getColormode() == Light::LampColorMode::XY)
     {
         m_slider = new QSlider(this);
@@ -55,6 +59,7 @@ void LightWidget::build_widget()
         m_slider->setMaximum(Light::maxBrightness());
         m_slider->setValue(m_light->getBrightness());        
         m_slider->setTickInterval(1);
+        m_slider->setEnabled(m_light->getOn());
         // do not emit events during drag
         m_slider->setTracking(false);
         QObject::connect(m_slider, &QSlider::valueChanged, [this](){ this->onSliderMoved(); });
