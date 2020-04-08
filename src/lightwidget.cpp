@@ -7,6 +7,11 @@
 #include <QGridLayout>
 #include <QDebug>
 
+const std::string LabelClassName = "LightWidgetLabel";
+const std::string GridClassName = "LightWidgetGrid";
+const std::string ToggleClassName = "LightWidgetToggle";
+const std::string SliderClassName = "LightWidgetSlider";
+
 LightWidget::LightWidget(QWidget *parent, Light& light, HueApi& api)
     : QWidget (parent)
 {
@@ -34,19 +39,25 @@ void LightWidget::build_widget()
     if(!m_light)
         return;
 
+    setObjectName("LightWidget");
+
     m_inner_layout = new QGridLayout(this);
+    m_inner_layout->setObjectName(QString::fromStdString(GridClassName));
+    m_inner_layout->setSpacing(6);
 
     // name of the light
     m_label = new QLabel(this);
     m_label->setText(m_light->getName());
+    m_label->setObjectName(QString::fromStdString(LabelClassName));
     m_inner_layout->addWidget(m_label, 0, 0, 1, 4);
+
 
     // switch to toggle light on/off
     m_on_toggle_button = new QPushButton(this);
-    m_on_toggle_button->setText("On/Off");
+    m_on_toggle_button->setText(m_light->getOn() ?  "On" : "Off");
     m_on_toggle_button->setCheckable(true);
     m_on_toggle_button->setChecked(m_light->getOn());
-    m_on_toggle_button->setStyleSheet("QPushButton{background-color: red;} QPushButton:checked{background-color:green;}");
+    m_on_toggle_button->setObjectName(QString::fromStdString(ToggleClassName));
 
     m_inner_layout->addWidget(m_on_toggle_button, 0, 4, 1, 1);    
     QObject::connect(m_on_toggle_button, &QPushButton::clicked, [this](bool toggled){ this->onOnOffToggleChange(toggled); });    
@@ -60,6 +71,7 @@ void LightWidget::build_widget()
         m_slider->setValue(m_light->getBrightness());        
         m_slider->setTickInterval(1);
         m_slider->setEnabled(m_light->getOn());
+        m_slider->setObjectName(QString::fromStdString(SliderClassName));
         // do not emit events during drag
         m_slider->setTracking(false);
         QObject::connect(m_slider, &QSlider::valueChanged, [this](){ this->onSliderMoved(); });

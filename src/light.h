@@ -48,7 +48,7 @@ public:
     /*
      *  Use this for setting max values for sliders etc.
      */
-    static int maxBrightness() { return 255; }
+    static int maxBrightness() { return 254; }
 
     /**
       *  toggle on/off

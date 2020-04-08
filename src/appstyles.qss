@@ -1,0 +1,49 @@
+
+#LightWidget {
+}
+
+QGridLayout {
+}
+
+#LightWidgetGrid {
+    background-color: black;
+}
+
+#LightWidgetLabel {
+    padding: 0
+}
+
+#LightWidgetToggle {
+    background-color: #ebf2fa;
+    border: 1px solid #999999;
+    height: 40px;
+    border-radius: 0px;
+    color: black;
+
+}
+
+#LightWidgetToggle:checked {
+    border: 1px solid #999999;
+    background-color:#619adf;
+    color: white;
+
+}
+
+#LightWidgetSlider {
+    background-color: #a8c7ed;
+    border-radius: 4px;
+    height: 1.2em;
+}
+
+#LightWidgetSlider::groove:horizontal {
+    border-top: 1px solid #050f19;
+    background-color: #ebf2fa;
+}
+
+#LightWidgetSlider::handle:horizontal {
+
+    background-color: #619adf;
+    width: 20px;
+    margin: 1px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 5px;
+}

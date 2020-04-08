@@ -5,16 +5,11 @@
 #include <src/light.h>
 #include <QMessageBox>
 #include <QDebug>
-#include <QIcon>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    QIcon icon("src/graphics/logo.ico");
-    qDebug() << "got icon: " << !icon.isNull();
-    setWindowIcon(icon);
-
     ui->setupUi(this);
     m_hue_api = new HueApi(this);
 

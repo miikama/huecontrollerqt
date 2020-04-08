@@ -1,6 +1,8 @@
 *.pro.user
 *.tar
 
+media/logo.svg
+
 # packaging
 build
 

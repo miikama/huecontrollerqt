@@ -52,9 +52,13 @@ DISTFILES += \
     README.md \
     install/HueControllerQT.desktop.template \
     package.sh \
-    install/install.sh
+    install/install.sh \
+    src/appstyles.qss
     install/supervisor.conf.template
 
 # app icon
 RC_ICONS = src/graphics/logo.ico
+
+RESOURCES += \
+    qml.qrc
 
