@@ -40,44 +40,51 @@ initRepo() {
     cd $BUILD_DIR
 }
 
+compileQt() {
+
+    # compile static QT in a parallel directory
+    test -d static_build && rm -r static_build
+    mkdir static_build
+
+    test -d install && rm -r install
+    mkdir install
+
+    cd static_build
+
+    ../qt5/configure -y -static \
+                    -prefix "$BUILD_DIR/install" \
+                    -release -ltcg -optimize-size -no-pch \
+                    -opensource \
+                    -nomake tools \
+                    -nomake examples \
+                    -nomake tests \
+                    -skip qtwebengine \
+                    -no-feature-geoservices_esri \
+                    -no-feature-geoservices_here \
+                    -no-feature-geoservices_itemsoverlay \
+                    -no-feature-geoservices_mapbox \
+                    -no-feature-geoservices_mapboxgl \
+                    -no-feature-geoservices_osm
+
+    # compile and install static libraries
+    CORE_COUNT=$(nproc)
+    make -j $CORE_COUNT && make install && echo "\n\nQT built successfully!\n\n" && sleep 0.5
+
+    cd $BUILD_DIR
+}
+
 
 # clone repo if not yet existing
 test -d qt5 || initRepo
 
-# compile static QT in a parallel directory
-test -d static_build && rm -r static_build
-mkdir static_build
-
-test -d install && rm -r install
-mkdir install
-
-cd static_build
-
-../qt5/configure -y -static \
-                -prefix "$BUILD_DIR/install" \
-                -release -ltcg -optimize-size -no-pch \
-                -opensource \
-                -nomake tools \
-                -nomake examples \
-                -nomake tests \
-                -skip qtwebengine \
-                -no-feature-geoservices_esri \
-                -no-feature-geoservices_here \
-                -no-feature-geoservices_itemsoverlay \
-                -no-feature-geoservices_mapbox \
-                -no-feature-geoservices_mapboxgl \
-                -no-feature-geoservices_osm
-
-# compile and install static libraries
-CORE_COUNT=$(nproc)
-make -j $CORE_COUNT && make install && echo "\n\nQT built successfully!\n\n" && sleep 0.5
-
+# Build QT if not yet built
+test -d install || compileQt
 
 ################################################################
 #                    Actually compile app
 ################################################################
 
-cd $BUILD_DIR
+
 $BUILD_DIR/install/bin/qmake -config release .. && make -j $CORE_COUNT
 
 # copy app into install directory
