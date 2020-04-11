@@ -1,11 +1,18 @@
 
 # HueControllerQT
 
-```HueControllerQT``` is a minimalist implementation of a desktop application written in ```C++``` and ```QT``` that you can use to control you Philips Hue smart lights through the Hue bridge. 
+```HueControllerQT``` is a minimalist desktop application written in ```C++``` and ```QT``` for Linux that you can use to control you Philips Hue smart lights through the Hue bridge.
 
 <p align="center">
     <img height="400px" src="media/EntryScreen.png">
 </p>
+
+
+A statically linked binary of the application compiled on Ubuntu 18.04 can be found under the releases. This means you can download the binary and run it. Nothing extra required. See the [Installation](#installation) for adding an autorun entry for starting the app on computer start-up.
+
+Please let me know if you try it and it does not work :)
+
+The application is currently built against static Qt libraries (v5.12). Since Qt is a cross-platform framework, there should be a minimal effort to compile and run the application on Windows, but haven't done so myself.
 
 ## Packaging
 
