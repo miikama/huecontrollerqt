@@ -53,9 +53,9 @@ mkdir install
 
 cd static_build
 
-../qt5/configure -static \
+../qt5/configure -y -static \
                 -prefix "$BUILD_DIR/install" \
-                -release -BUILD_DIRltcg -optimize-size -no-pch \
+                -release -ltcg -optimize-size -no-pch \
                 -opensource \
                 -nomake tools \
                 -nomake examples \
