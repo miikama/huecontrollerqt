@@ -123,6 +123,9 @@ void MainWindow::draw_lights()
 
     for( auto& light : m_hue_api->lights())
     {
+        if(!light.getReachable())
+            continue;
+
         auto light_widget = new LightWidget(this, light, *m_hue_api);
         m_light_widgets.append(light_widget);
 
