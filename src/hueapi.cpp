@@ -31,7 +31,7 @@ HueApi::HueApi(QWidget* parent) :
     auto confirm_reply = [&](QNetworkReply* reply){        
         if(reply->error() != QNetworkReply::NoError)
         {
-            qDebug() << "returning due failed query, which has data: " << reply->readAll();
+            qDebug() << "returning due failed query to url: " << reply->url() << ", response has data: " << reply->readAll();
             return false;
         }
         return true;
@@ -365,10 +365,11 @@ void HueApi::find_bridge()
         return;
     }
 
-    auto api_address = QString("https://www.meethue.com/api/nupnp");
+    auto api_address = QString("https://discovery.meethue.com/");
     auto url = QUrl(api_address);
 
     auto request = QNetworkRequest(url);
+    qDebug() << "Trying to find bridge ip with GET request to " << request.url();
     m_bridge_api_manager->get(request);
 }
 
@@ -452,12 +453,14 @@ Light* HueApi::light_from_id(const QString& light_id)
 
 bool HueApi::load_bridge_config() {
 
-    qDebug() << "System standard paths: " << QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
-
     // get the save location
     auto system_config_directory = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    qDebug() << "Found writable path: " << system_config_directory;
     auto config_directory = QDir::cleanPath(system_config_directory + QDir::separator() + m_config_dir);
+    qDebug() << "Configuration will be written in path: " << config_directory;
+    if (!QDir(config_directory).mkpath(config_directory))
+    {
+        qDebug() << "Could not create config path: " << config_directory;
+    }
     auto config_full_path = QDir::cleanPath(config_directory +  QDir::separator() + m_config_file_name);
 
 
