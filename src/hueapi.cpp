@@ -227,6 +227,9 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
     for(auto& key : keys)
     {
         QJsonObject entry = rootObj.find(key)->toObject();
+#if DEBUG
+        qDebug() << "The response for light " << key << ": " << entry << "\n";
+#endif
         // lets say that each valid light object requires a state
         // to be present to be considered valid light
 
@@ -246,6 +249,7 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
         light_data.bri = state.find("bri")->toInt();
         light_data.hue = state.find("hue")->toInt();
         light_data.sat = state.find("sat")->toInt();
+        light_data.ct = state.find("ct")->toInt();
 
         auto xy = state.find("xy")->toArray();
         if(xy.empty()) {
@@ -255,8 +259,22 @@ void HueApi::on_light_query_response(QNetworkReply *reply) {
             light_data.xy = { xy.first().toDouble(), xy.last().toDouble() };
         }
 
-        // Todo: parse more that xy mode
-        light_data.colormode = state.find("colormode")->toString() == "xy" ? Light::LampColorMode::XY : Light::LampColorMode::UNKNOWN;
+#ifdef DEBUG
+        qDebug() << "Light id: " << light_data.bridge_id << " and color mode: " << state.find("colormode")->toString() << "\n";
+#endif
+        auto colormode = state.find("colormode")->toString();
+        if (colormode == "xy")
+        {
+            light_data.colormode = Light::LampColorMode::XY;
+        }
+        else if (colormode == "ct")
+        {
+            light_data.colormode = Light::LampColorMode::CT;
+        }
+        else
+        {
+            light_data.colormode = Light::LampColorMode::UNKNOWN;
+        }
         light_data.reachable = state.find("reachable")->toBool();
 
         // parse general information

@@ -59,16 +59,18 @@ void LightWidget::build_widget()
     m_on_toggle_button->setChecked(m_light->getOn());
     m_on_toggle_button->setObjectName(QString::fromStdString(ToggleClassName));
 
-    m_inner_layout->addWidget(m_on_toggle_button, 0, 4, 1, 1);    
-    QObject::connect(m_on_toggle_button, &QPushButton::clicked, [this](bool toggled){ this->onOnOffToggleChange(toggled); });    
+    m_inner_layout->addWidget(m_on_toggle_button, 0, 4, 1, 1);
+    QObject::connect(m_on_toggle_button, &QPushButton::clicked, [this](bool toggled){ this->onOnOffToggleChange(toggled); });
 
     // lamp has known brightness
-    if( m_light->getColormode() == Light::LampColorMode::XY)
+    switch (m_light->getColormode()) {
+    case Light::LampColorMode::XY:
+    case Light::LampColorMode::CT:      // intentional fallthrough
     {
         m_slider = new QSlider(this);
         m_slider->setOrientation(Qt::Orientation::Horizontal);
         m_slider->setMaximum(Light::maxBrightness());
-        m_slider->setValue(m_light->getBrightness());        
+        m_slider->setValue(m_light->getBrightness());
         m_slider->setTickInterval(1);
         m_slider->setEnabled(m_light->getOn());
         m_slider->setObjectName(QString::fromStdString(SliderClassName));
@@ -76,8 +78,12 @@ void LightWidget::build_widget()
         m_slider->setTracking(false);
         QObject::connect(m_slider, &QSlider::valueChanged, [this](){ this->onSliderMoved(); });
 
-
         m_inner_layout->addWidget(m_slider, 1, 0, 1, 5);
+        break;
     }
+    case Light::LampColorMode::UNKNOWN:
+        break;
+    }
+
 
 }

@@ -13,7 +13,8 @@ public:
 
     enum LampColorMode {
         UNKNOWN,
-        XY
+        XY,
+        CT,
     };
 
     struct Room {
